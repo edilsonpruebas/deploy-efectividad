@@ -20,4 +20,4 @@ RUN chown www-data:www-data /var/www/html/database/database.sqlite
 
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 
-CMD ["sh", "-c", "php artisan migrate --force && php-fpm -D && envsubst '${PORT}' < /etc/nginx/sites-available/default > /etc/nginx/sites-enabled/default && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "php artisan migrate --force && php-fpm -D && envsubst '${PORT}' < /etc/nginx/sites-available/default > /etc/nginx/sites-enabled/default && nginx -t && nginx -g 'daemon off;'"]
