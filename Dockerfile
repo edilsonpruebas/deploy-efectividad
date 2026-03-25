@@ -1,12 +1,10 @@
 FROM php:8.2-apache
 
-# build v2 - forzar rebuild
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libsqlite3-dev \
     && docker-php-ext-install zip pdo pdo_sqlite
 
-RUN a2dismod mpm_event && a2enmod mpm_prefork rewrite
-
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
