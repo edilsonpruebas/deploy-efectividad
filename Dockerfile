@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libsqlite3-dev \
     && docker-php-ext-install zip pdo pdo_sqlite
 
-RUN a2enmod rewrite
+RUN a2dismod mpm_event && a2enmod mpm_prefork rewrite
+
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
