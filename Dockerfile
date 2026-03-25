@@ -1,12 +1,14 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libzip-dev libsqlite3-dev \
     && docker-php-ext-install zip pdo pdo_sqlite
 
+RUN a2enmod rewrite
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
+WORKDIR /var/www/html
 
 COPY . .
 
@@ -17,6 +19,8 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 RUN touch database/database.sqlite
 
-EXPOSE 8000
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-CMD ["sh", "-c", "echo Puerto asignado: $PORT && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"]
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+
+CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
