@@ -18,7 +18,7 @@ return [
     */
 
     'default' => env('DB_CONNECTION', 'sqlite'),
-
+    
     /*
     |--------------------------------------------------------------------------
     | Database Connections
@@ -35,13 +35,13 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            // CAMBIO IMPORTANTE: Usar ruta absoluta explícita para Docker/Railway
+            'database' => env('DB_DATABASE', '/app/database/database.sqlite'),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
+            'busy_timeout' => 5000,  // Añadido: espera si la BD está bloqueada
             'journal_mode' => null,
             'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
         ],
 
         'mysql' => [
