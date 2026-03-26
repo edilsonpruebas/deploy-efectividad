@@ -10,13 +10,20 @@ class ProcessSeeder extends Seeder
     public function run(): void
     {
         $processes = [
-            ['name' => 'Doblado',  'is_active' => true],  // 👈 is_active
-            ['name' => 'Corte',    'is_active' => true],  // 👈 is_active
-            ['name' => 'Envibado', 'is_active' => true],  // 👈 is_active
+            ['name' => 'Doblado',  'is_active' => true, 'base_per_hour' => 0],
+            ['name' => 'Corte',    'is_active' => true, 'base_per_hour' => 0],
+            ['name' => 'Envibado', 'is_active' => true, 'base_per_hour' => 0],
         ];
 
         foreach ($processes as $process) {
-            Process::create($process);
+            // ✅ No duplica en cada deploy
+            Process::firstOrCreate(
+                ['name' => $process['name']],
+                [
+                    'is_active'     => $process['is_active'],
+                    'base_per_hour' => $process['base_per_hour'],
+                ]
+            );
         }
     }
 }

@@ -6,46 +6,27 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Modules\Prueba\Models\User;
 
-class OperatorsTableSeeder extends Seeder  // 👈 nombre debe coincidir con el archivo
+class OperatorsTableSeeder extends Seeder
 {
     public function run(): void
     {
-        // OPERADORES
-        User::create([
-            'name'     => 'Juan Perez',
-            'email'    => 'juan@prueba.com',
-            'password' => Hash::make('password'),
-            'role'     => 'OPERADOR',
-        ]);
+        $users = [
+            ['name' => 'Juan Perez',    'email' => 'juan@prueba.com',   'role' => 'OPERADOR'],
+            ['name' => 'Pedro Garcia',  'email' => 'pedro@prueba.com',  'role' => 'OPERADOR'],
+            ['name' => 'Maria Lopez',   'email' => 'maria@prueba.com',  'role' => 'OPERADOR'],
+            ['name' => 'Carlos Mendez', 'email' => 'carlos@prueba.com', 'role' => 'SUPERVISOR'],
+            ['name' => 'Admin',         'email' => 'admin@prueba.com',  'role' => 'ADMIN'],
+        ];
 
-        User::create([
-            'name'     => 'Pedro Garcia',
-            'email'    => 'pedro@prueba.com',
-            'password' => Hash::make('password'),
-            'role'     => 'OPERADOR',
-        ]);
-
-        User::create([
-            'name'     => 'Maria Lopez',
-            'email'    => 'maria@prueba.com',
-            'password' => Hash::make('password'),
-            'role'     => 'OPERADOR',
-        ]);
-
-        // SUPERVISORES
-        User::create([
-            'name'     => 'Carlos Mendez',
-            'email'    => 'carlos@prueba.com',
-            'password' => Hash::make('password'),
-            'role'     => 'SUPERVISOR',
-        ]);
-
-        // ADMIN
-        User::create([
-            'name'     => 'Admin',
-            'email'    => 'admin@prueba.com',
-            'password' => Hash::make('password'),
-            'role'     => 'ADMIN',
-        ]);
+        foreach ($users as $userData) {
+            User::firstOrCreate(
+                ['email' => $userData['email']],
+                [
+                    'name'     => $userData['name'],
+                    'password' => Hash::make('password'),
+                    'role'     => $userData['role'],
+                ]
+            );
+        }
     }
 }
