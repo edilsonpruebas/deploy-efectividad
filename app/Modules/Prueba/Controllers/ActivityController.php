@@ -7,46 +7,66 @@ use Illuminate\Http\Request;
 use App\Modules\Prueba\Models\Activity;
 use App\Modules\Prueba\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;  // ← agregar
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+
 
 class ActivityController extends Controller
 {
+
     /**
      * 🔹 START (FASE 1)
      */
-    public function start(Request $request)
-    {
-        $request->validate([
-            'process_id'  => 'required|exists:processes,id',
-            'operator_id' => 'required|exists:users,id',
+public function start(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'process_id'  => ['required', Rule::exists(\App\Modules\Prueba\Models\Process::class, 'id')],
+        'operator_id' => ['required', Rule::exists(\App\Modules\Prueba\Models\User::class, 'id')],
+    ]);
+
+    if ($validator->fails()) {
+        Log::error('START validation failed', [
+            'input'  => $request->all(),
+            'errors' => $validator->errors()->toArray(),
+        ]);
+        return response()->json([
+            'error'  => 'Validación fallida',
+            'fields' => $validator->errors()
+        ], 422);
+    }
+
+    try {
+        $activity = Activity::create([
+            'process_id'    => $request->process_id,
+            'operator_id'   => $request->operator_id,
+            'supervisor_id' => Auth::id() ?? null,
+            'start_time'    => now(),
+            'status'        => 'OPEN'
         ]);
 
-        try {
-            $activity = Activity::create([
-                'process_id'    => $request->process_id,
-                'operator_id'   => $request->operator_id,
-                'supervisor_id' => Auth::id() ?? null,
-                'start_time'    => now(),
-                'status'        => 'OPEN'
+        if ($activity && $activity->id) {
+            ActivityLog::create([
+                'activity_id' => $activity->id,
+                'action'      => 'START',
+                'user_id'     => Auth::id() ?? null,
+                'timestamp'   => now()
             ]);
-
-            if ($activity && $activity->id) {
-                ActivityLog::create([
-                    'activity_id' => $activity->id,
-                    'action'      => 'START',
-                    'user_id'     => Auth::id() ?? null,
-                    'timestamp'   => now()
-                ]);
-            }
-
-            return response()->json([
-                'message' => 'Actividad iniciada',
-                'data'    => $activity->load(['operator', 'process'])
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
         }
+
+        return response()->json([
+            'message' => 'Actividad iniciada',
+            'data'    => $activity->load(['operator', 'process'])
+        ], 201);
+
+    } catch (\Exception $e) {
+        Log::error('START activity error', [
+            'message' => $e->getMessage(),
+            'trace'   => $e->getTraceAsString(),
+        ]);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     /**
      * 🔹 STOP (FASE 2)
